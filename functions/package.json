@@ -10,7 +10,9 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@verax-attestation-registry/verax-sdk": "^2.0.0",
     "ethers": "^6.13.2",
+    "openai": "^4.63.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2"
   }
