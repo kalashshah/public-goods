@@ -4,7 +4,7 @@ const OpenAI = require("openai");
 
 const PRIVATE_KEY =
   "409c54bed0f17d8a9913e5df2c61ff2fb39d8b3883ee8b9314f52b46c0413c80";
-const contractAddress = "0x61aDab164CcA7732693F6E14e8B319d8519Cf529";
+const contractAddress = "0x435663d1c28718FA9f23698de8373fC5AB423818";
 const contractABI = [
   {
     anonymous: false,
@@ -47,6 +47,30 @@ const contractABI = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "attestations",
+    outputs: [
+      {
+        internalType: "address",
+        name: "user",
+        type: "address",
+      },
+      {
+        internalType: "uint32",
+        name: "score",
+        type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "string",
         name: "url",
         type: "string",
@@ -71,13 +95,38 @@ const contractABI = [
       },
       {
         internalType: "uint32",
-        name: "response",
+        name: "score",
         type: "uint32",
       },
     ],
     name: "fulfillRequest",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getAttestations",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "user",
+            type: "address",
+          },
+          {
+            internalType: "uint32",
+            name: "score",
+            type: "uint32",
+          },
+        ],
+        internalType: "struct AddedAttestation[]",
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -89,6 +138,25 @@ const contractABI = [
       },
     ],
     name: "message",
+    outputs: [
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "userScore",
     outputs: [
       {
         internalType: "uint32",

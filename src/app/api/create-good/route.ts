@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
-import { v2 as cloudinary } from "cloudinary";
 
 export async function POST(req: Request) {
-  if (req.method !== "POST") {
-    return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
-  }
-
   try {
     const body = await req.json();
+
+    console.log(JSON.stringify({ NextResponse }));
 
     const cloudProofResponse = await fetch(
       "https://developer.worldcoin.org/api/v2/verify/app_staging_ba8f7d74a9bcc471a13ebb050024aeb5",
@@ -42,46 +38,30 @@ export async function POST(req: Request) {
       );
     }
 
-    const client = new OpenAI({
-      baseURL: "https://llama.us.gaianet.network/v1",
-      apiKey: "",
-    });
+    // cloudinary.config({
+    //   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    //   api_key: process.env.CLOUDINARY_API_KEY,
+    //   api_secret: process.env.CLOUDINARY_API_SECRET,
+    // });
 
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
+    // const uploadResponse = await cloudinary.uploader.upload(body.image, {
+    //   overwrite: true,
+    //   invalidate: true,
+    //   width: 810,
+    //   height: 456,
+    //   crop: "fill",
+    // });
 
-    const uploadResponse = await cloudinary.uploader.upload(body.image, {
-      overwrite: true,
-      invalidate: true,
-      width: 810,
-      height: 456,
-      crop: "fill",
-    });
+    // const imageUrl = uploadResponse.secure_url;
 
-    const imageUrl = uploadResponse.secure_url;
+    const imageUrl =
+      "https://res.cloudinary.com/drlni3r6u/image/upload/v1726944753/qrp2lthyht6ndljqbfyx.jpg";
 
-    const response = await client.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are the judge of a social good event, give response in this json form { isPublicGood: boolean, score: number } by taking a look at the image provided and the score should vary between 0 and 100 depending on its scale and impact. Don't return anything else, just the json.",
-        },
-        { role: "user", content: `${body.data}\n${imageUrl}` },
-      ],
-      model: "Meta-Llama-3-8B-Instruct-Q5_K_M",
-      temperature: 0.7,
-      max_tokens: 500,
-    });
-
-    console.log("response", response.choices[0].message.content);
+    console.log("✅ image url", imageUrl);
 
     return NextResponse.json(
-      { success: "Success", data: response.choices[0].message.content },
-      { status: 200 }
+      { success: "Success", data: imageUrl },
+      { status: 200, headers: { "content-type": "application/json" } }
     );
   } catch (error) {
     console.error("Error creating good:", error);

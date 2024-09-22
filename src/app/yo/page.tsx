@@ -5,7 +5,7 @@ import { VeraxSdk } from "@verax-attestation-registry/verax-sdk";
 
 const SCHEMA_ID =
   "0x5673f4088699862e7487279d32ec3908d61f843dc3703dc56b8bbab4028c2b12";
-const PORTAL_ADDRESS = "0x837Db0B64766C1B65f9e3cE6b593B2C49eD1DC6B";
+const PORTAL_ADDRESS = "0x510368C81999eac9aAF2adb26fbcD9d6cf2B1e0c";
 
 const Page = () => {
   const address = "0xACEe0D180d0118FD4F3027Ab801cc862520570d1";
@@ -49,9 +49,21 @@ const Page = () => {
     console.log("Portal deployed", txHash);
   };
 
-  const doThis = async () => {
-    await deployPortal();
+  const createAttestation = async () => {
+    const txHash = await veraxSdk.portal.attest(
+      PORTAL_ADDRESS,
+      {
+        schemaId: SCHEMA_ID,
+        expirationDate: 2693583329,
+        subject: address,
+        attestationData: [{ score: 20 }],
+      },
+      []
+    );
+    console.log("Attestation created", txHash);
   };
+
+  const doThis = async () => {};
 
   return (
     <div>

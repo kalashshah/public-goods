@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { Input } from "@/components/ui/input";
@@ -20,6 +22,171 @@ import { MetaMaskButton } from "@metamask/sdk-react-ui";
 import { Leaf, Recycle, Zap } from "lucide-react";
 import localFont from "next/font/local";
 import Image from "next/image";
+import { ethers } from "ethers";
+
+const contractABI = [
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "messageId",
+        type: "bytes32",
+      },
+      {
+        indexed: false,
+        internalType: "string",
+        name: "url",
+        type: "string",
+      },
+    ],
+    name: "FunctionRequest",
+    type: "event",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "addressMap",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "attestations",
+    outputs: [
+      {
+        internalType: "address",
+        name: "user",
+        type: "address",
+      },
+      {
+        internalType: "uint32",
+        name: "score",
+        type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "url",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "description",
+        type: "string",
+      },
+    ],
+    name: "contribute",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "messageId",
+        type: "bytes32",
+      },
+      {
+        internalType: "uint32",
+        name: "score",
+        type: "uint32",
+      },
+    ],
+    name: "fulfillRequest",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getAttestations",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "address",
+            name: "user",
+            type: "address",
+          },
+          {
+            internalType: "uint32",
+            name: "score",
+            type: "uint32",
+          },
+        ],
+        internalType: "struct AddedAttestation[]",
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    name: "message",
+    outputs: [
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "userScore",
+    outputs: [
+      {
+        internalType: "uint32",
+        name: "",
+        type: "uint32",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+];
 
 const nounsFontSolid = localFont({
   src: "./fonts/LondrinaSolid-Black.ttf",
@@ -38,6 +205,7 @@ export default function Home() {
   const [connected, setConnected] = useState(false);
   const [serviceStatus, setServiceStatus] = useState<ServiceStatus>();
   const [activeProvider, setActiveProvider] = useState<SDKProvider>();
+  const [userScore, setUserScore] = useState<number>();
 
   //initialize sdk
   useEffect(() => {
@@ -193,28 +361,64 @@ export default function Home() {
       console.log({
         text,
         image,
-        wc: res,
+        // wc: res,
       });
 
-      const response = await fetch("/api/create-good", {
-        method: "POST",
-        body: JSON.stringify({
-          image,
-          data: text,
-          proof: res.proof,
-          nullifier_hash: res.nullifier_hash,
-          merkle_root: res.merkle_root,
-          verification_level: res.verification_level,
-          action: "public-good-act",
-          signal: JSON.stringify({ image, data: text }),
-        }),
-      });
+      // const response = await fetch("/api/create-good", {
+      //   method: "POST",
+      //   body: JSON.stringify({
+      //     image,
+      //     data: text,
+      //     proof: res.proof,
+      //     nullifier_hash: res.nullifier_hash,
+      //     merkle_root: res.merkle_root,
+      //     verification_level: res.verification_level,
+      //     action: "public-good-act",
+      //     signal: JSON.stringify({ image, data: text }),
+      //   }),
+      // });
 
-      console.log("response", response);
+      // const result: any = await response.json();
+      // console.log("response", result);
+
+      const result =
+        "https://res.cloudinary.com/drlni3r6u/image/upload/v1726907320/erlqnnap2t5upcarqioo.jpg";
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      const contract = new ethers.Contract(
+        "0x435663d1c28718FA9f23698de8373fC5AB423818",
+        contractABI,
+        signer
+      );
+
+      const res = await contract.contribute(result, text);
+      console.log("res", res);
     } catch (e) {
       console.log("Error", e);
     }
   };
+
+  useEffect(() => {
+    console.log({
+      activeProvider,
+      account,
+    });
+    if (!account) return;
+    const contract = new ethers.Contract(
+      "0x435663d1c28718FA9f23698de8373fC5AB423818",
+      contractABI,
+      new ethers.JsonRpcProvider("https://rpc.sepolia.linea.build")
+    );
+
+    console.log("Contract", contract);
+
+    (async () => {
+      const res = await contract.userScore(account);
+      setUserScore(Number(BigInt(res).toString()));
+    })();
+  }, [activeProvider, account]);
 
   return (
     <>
@@ -227,15 +431,18 @@ export default function Home() {
           }
         `}</style>
 
-        <Image
+        {/* <Image
           src={require("../assets/nouns_bg.png")}
           alt="Bg"
           layout="fill" // This will make the image fill its container
           objectFit="cover" // Ensures the image covers the area like background-image
           className="absolute inset-0 z-[-1]" // Puts the image behind the content
-        />
+        /> */}
 
         <div className="min-h-screen bg-gradient-to-b from-green-100 to-blue-100 p-4 sm:p-8 flex items-center justify-center z-10">
+          <div className="absolute top-[20px] right-[20px]">
+            <MetaMaskButton theme={"light"} color="white" />
+          </div>
           <div className="w-full max-w-4xl bg-white rounded-3xl shadow-xl overflow-hidden">
             <div className="p-6 sm:p-12">
               <h1 className="text-4xl sm:text-5xl font-black text-green-600 mb-8 text-center leading-tight">
@@ -244,7 +451,12 @@ export default function Home() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <form className="space-y-6">
+                  <form
+                    className="space-y-6"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                    }}
+                  >
                     <div className="space-y-2">
                       <Label
                         htmlFor="text-input"
@@ -261,12 +473,20 @@ export default function Home() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="image-input"
-                        className="text-xl font-bold text-gray-700"
-                      >
-                        Upload an image (optional)
-                      </Label>
+                      <div className="flex flex-row items-center gap-2">
+                        <Label
+                          htmlFor="image-input"
+                          className="text-xl font-bold text-gray-700"
+                        >
+                          Upload an image
+                        </Label>
+                        <Image
+                          src={require("../assets/camera-rounded.png")}
+                          alt="Camera"
+                          width={20}
+                          height={20}
+                        />
+                      </div>
                       <div className="relative">
                         <Input
                           id="image-input"
@@ -319,7 +539,7 @@ export default function Home() {
 
                 <div className="flex flex-col justify-center items-center bg-green-50 rounded-2xl p-6">
                   <div className="text-7xl font-black text-green-600 mb-4">
-                    {0}
+                    {userScore || "-"}
                   </div>
                   <div className="text-3xl font-bold text-gray-700 mb-6">
                     Your Green Score
@@ -335,14 +555,19 @@ export default function Home() {
 
             <div className="bg-green-600 p-6 flex justify-between items-center">
               <div className="text-white font-black text-2xl">
-                Keep up the great work!
+                Join the others currently leading our leaderboard!
               </div>
               <div className="flex space-x-2">
                 {[...Array(5)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="w-10 h-10 bg-yellow-300 rounded-full"
-                  ></div>
+                  <div key={i} className="w-10 h-10 bg-yellow-300 rounded-full">
+                    <Image
+                      src={require(`../assets/pfp-${i + 1}.svg`)}
+                      alt="Camera"
+                      width={50}
+                      height={50}
+                      className="rounded-full"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
